@@ -9,26 +9,22 @@ import java.time.ZonedDateTime;
 
 @Service
 public class TimeUtils {
-    public static final long MILLIS_PER_SECOND = 1000;
+    public static final long MILLIS_PER_SECOND = 100;
     public static final long TRANSACTION_TIME_LIMIT = 60000;
 
-
-    public ZonedDateTime getCurrentTime() {
-        return LocalDateTime.now().atZone(ZoneId.systemDefault());
-    }
     public Long getCurrentTimeInMillis() {
-        return getCurrentTime().toInstant().toEpochMilli();
+        return Instant.now().toEpochMilli();
     }
 
     public Long getCurrentTimeInSeconds() {
-        return getCurrentTime().toInstant().getEpochSecond();
+        return Instant.now().getEpochSecond();
     }
 
-    public Long getTransactionTimeInMillis(LocalDateTime transactionTime) {
-        return transactionTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    public Long getTransactionTimeInMillis(Instant transactionTime) {
+        return transactionTime.toEpochMilli();
     }
-    public Long getTransactionTimeInSeconds(LocalDateTime transactionTime) {
-        return transactionTime.atZone(ZoneId.systemDefault()).toInstant().getEpochSecond();
+    public Long getTransactionTimeInSeconds(Instant transactionTime) {
+        return transactionTime.getEpochSecond();
     }
 
 }

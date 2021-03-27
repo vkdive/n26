@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.text.DecimalFormat;
 import java.util.DoubleSummaryStatistics;
 
 @AllArgsConstructor
@@ -12,17 +13,18 @@ import java.util.DoubleSummaryStatistics;
 @EqualsAndHashCode
 @ToString
 public class StatisticSummary {
-    private double sum;
-    private double avg;
-    private double max;
-    private double min;
+    private String sum;
+    private String avg;
+    private String max;
+    private String min;
     private long count;
 
     public StatisticSummary(DoubleSummaryStatistics totalStatistics) {
-        this.sum = totalStatistics.getSum();
-        this.avg = totalStatistics.getAverage();
-        this.max = totalStatistics.getMax();
-        this.min = totalStatistics.getMin();
+
+        this.sum = new DecimalFormat("###0.00").format(totalStatistics.getSum());
+        this.avg = new DecimalFormat("###0.00").format(totalStatistics.getAverage());
+        this.max = new DecimalFormat("###0.00").format(totalStatistics.getMax());
+        this.min = new DecimalFormat("###0.00").format(totalStatistics.getMin());
         this.count = totalStatistics.getCount();
     }
 }

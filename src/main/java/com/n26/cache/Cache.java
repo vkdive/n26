@@ -6,6 +6,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.DoubleSummaryStatistics;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -18,16 +20,18 @@ public class Cache {
     }
 
     @Async
-    public void saveTransaction(long transactionTimeInSeconds, double amount) {
+    public void add(long transactionTimeInSeconds, double amount) {
         DoubleSummaryStatistics newPerSecondStatistic = new DoubleSummaryStatistics();
         newPerSecondStatistic.accept(amount);
         statisticsBuffer.put(transactionTimeInSeconds, newPerSecondStatistic);
         log.info("Saved transaction in cache");
     }
 
-    public boolean deleteOlderTransactionFor(Long TimeInSeconds) {
+    public boolean deleteKey(Long TimeInSeconds) {
         if (statisticsBuffer.containsKey(TimeInSeconds)) {
-            statisticsBuffer.remove(TimeInSeconds);
+            Set<Long> set = new HashSet<>();
+            set.add(TimeInSeconds);
+            statisticsBuffer.keySet().removeAll(set);
             log.info("deleted older transaction");
             return true;
         }
@@ -43,7 +47,10 @@ public class Cache {
                 });
     }
 
-    public void delete() {
+    public void clear() {
         statisticsBuffer.clear();
+    }
+    public ConcurrentHashMap<Long, DoubleSummaryStatistics> getCacheContents(){
+        return statisticsBuffer;
     }
 }

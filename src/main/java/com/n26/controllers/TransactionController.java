@@ -33,7 +33,7 @@ public class TransactionController {
             return new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY);
         }
         if (currentTimeInMillis - transactionTimeInMillis < TRANSACTION_TIME_LIMIT) {
-            statisticsService.save(transaction);
+            statisticsService.saveTransaction(transaction);
             return new ResponseEntity(HttpStatus.CREATED);
         }
         return new ResponseEntity(HttpStatus.NO_CONTENT);

@@ -17,9 +17,9 @@ public class DeleteController {
         this.statisticsService = statisticsService;
     }
 
-    @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    public ResponseEntity get() {
+    @RequestMapping(value = "/transactions", method = RequestMethod.DELETE)
+    public ResponseEntity delete() {
         statisticsService.delete();
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }

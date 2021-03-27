@@ -9,7 +9,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.Instant;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -26,8 +27,8 @@ public class StatisticsServiceTest extends TestCase {
 
     @Test
     public void shouldSaveTransaction() {
-        TransactionRequest transaction = new TransactionRequest(100.0, LocalDateTime.now().minusSeconds(2));
-        statisticsService.save(transaction);
+        TransactionRequest transaction = new TransactionRequest(100.0, Instant.now().minusSeconds(2));
+        statisticsService.saveTransaction(transaction);
         StatisticSummary statisticSummary = statisticsService.getSummary();
 
         assertThat(statisticSummary.getCount(), is(1L));
@@ -40,12 +41,12 @@ public class StatisticsServiceTest extends TestCase {
     @Test
     public void shouldUpdateSummaryForAnTransactionWithExistingTransactionsInBuffer() {
 
-        TransactionRequest transactionOne = new TransactionRequest(100.0, LocalDateTime.now().minusSeconds(2));
-        TransactionRequest transactionTwo = new TransactionRequest(200.0, LocalDateTime.now().minusSeconds(4));
-        TransactionRequest transactionThree = new TransactionRequest(300.0, LocalDateTime.now().minusSeconds(5));
-        statisticsService.save(transactionOne);
-        statisticsService.save(transactionTwo);
-        statisticsService.save(transactionThree);
+        TransactionRequest transactionOne = new TransactionRequest(100.0, Instant.now().minusSeconds(2));
+        TransactionRequest transactionTwo = new TransactionRequest(200.0, Instant.now().minusSeconds(4));
+        TransactionRequest transactionThree = new TransactionRequest(300.0, Instant.now().minusSeconds(5));
+        statisticsService.saveTransaction(transactionOne);
+        statisticsService.saveTransaction(transactionTwo);
+        statisticsService.saveTransaction(transactionThree);
         StatisticSummary statisticSummary = statisticsService.getSummary();
 
         assertThat(statisticSummary.getCount(), is(3L));
@@ -69,11 +70,11 @@ public class StatisticsServiceTest extends TestCase {
     @Test
     public void shouldReturnSummaryStatisticsAsPerContentsOfBuffer() {
 
-        TransactionRequest transaction1 = new TransactionRequest(100.0, LocalDateTime.now().minusSeconds(2));
-        TransactionRequest transaction2 = new TransactionRequest(200.0, LocalDateTime.now().minusSeconds(4));
+        TransactionRequest transaction1 = new TransactionRequest(100.0, Instant.now().minusSeconds(2));
+        TransactionRequest transaction2 = new TransactionRequest(200.0, Instant.now().minusSeconds(4));
 
-        statisticsService.save(transaction1);
-        statisticsService.save(transaction2);
+        statisticsService.saveTransaction(transaction1);
+        statisticsService.saveTransaction(transaction2);
 
         StatisticSummary statisticSummary = statisticsService.getSummary();
 
@@ -87,36 +88,36 @@ public class StatisticsServiceTest extends TestCase {
     @Test
     public void shouldDeleteTransaction() {
 
-        TransactionRequest transaction1 = new TransactionRequest(100.0, LocalDateTime.now().minusSeconds(2));
-        TransactionRequest transaction2 = new TransactionRequest(200.0, LocalDateTime.now().minusSeconds(4));
+        TransactionRequest transaction1 = new TransactionRequest(100.0, Instant.now().minusSeconds(2));
+        TransactionRequest transaction2 = new TransactionRequest(200.0, Instant.now().minusSeconds(4));
 
-        statisticsService.save(transaction1);
-        statisticsService.save(transaction2);
+        statisticsService.saveTransaction(transaction1);
+        statisticsService.saveTransaction(transaction2);
 
         StatisticSummary statisticSummary = statisticsService.getSummary();
 
         assertThat(statisticSummary.getCount(), is(2L));
-        assertThat(statisticSummary.getSum(), is(300.0));
-        assertThat(statisticSummary.getAvg(), is(150.0));
-        assertThat(statisticSummary.getMax(), is(200.0));
-        assertThat(statisticSummary.getMin(), is(100.0));
+        assertThat(statisticSummary.getSum(), is("300.0"));
+        assertThat(statisticSummary.getAvg(), is("150.0"));
+        assertThat(statisticSummary.getMax(), is("200.0"));
+        assertThat(statisticSummary.getMin(), is("100.0"));
 
         statisticsService.delete();
         statisticSummary = statisticsService.getSummary();
         assertThat(statisticSummary.getCount(), is(0L));
-        assertThat(statisticSummary.getSum(), is(0.0));
-        assertThat(statisticSummary.getAvg(), is(0.0));
-        assertThat(statisticSummary.getMax(), is(0.0));
-        assertThat(statisticSummary.getMin(), is(0.0));
+        assertThat(statisticSummary.getSum(), is("0.00"));
+        assertThat(statisticSummary.getAvg(), is("0.00"));
+        assertThat(statisticSummary.getMax(), is("0.00"));
+        assertThat(statisticSummary.getMin(), is("0.00"));
     }
 
     @Test
     public void shouldPruneOlderTransactions() throws InterruptedException {
 
-        TransactionRequest transactionOne = new TransactionRequest(100.0, LocalDateTime.now().minusSeconds(2));
-        TransactionRequest transactionTwo = new TransactionRequest(200.0, LocalDateTime.now().minusSeconds(58));
-        statisticsService.save(transactionOne);
-        statisticsService.save(transactionTwo);
+        TransactionRequest transactionOne = new TransactionRequest(100.0, Instant.now().minusSeconds(2));
+        TransactionRequest transactionTwo = new TransactionRequest(200.0, Instant.now().minusSeconds(58));
+        statisticsService.saveTransaction(transactionOne);
+        statisticsService.saveTransaction(transactionTwo);
         StatisticSummary statisticSummary = statisticsService.getSummary();
 
         assertThat(statisticSummary.getCount(), is(2L));
@@ -126,7 +127,7 @@ public class StatisticsServiceTest extends TestCase {
         assertThat(statisticSummary.getMin(), is(100.0));
 
         Thread.sleep(2000);
-        statisticsService.pruneOlderStatistics();
+        statisticsService.pruneOlderTransaction();
 
         statisticSummary = statisticsService.getSummary();
 

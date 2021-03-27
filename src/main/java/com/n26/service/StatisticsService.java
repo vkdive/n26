@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import java.util.DoubleSummaryStatistics;
 
 @Service
@@ -18,19 +17,15 @@ public class StatisticsService {
     private final TimeUtils timeUtils = new TimeUtils();
     private DoubleSummaryStatistics aggregatedStatisticsSummary;
 
-    StatisticsService(Cache cache) {
+    public StatisticsService(Cache cache) {
         this.cache = cache;
         aggregatedStatisticsSummary = new DoubleSummaryStatistics();
     }
 
-    public void delete() {
-        cache.delete();
-    }
-
-    public void save(final TransactionRequest transactionRequest) {
+    public void saveTransaction(final TransactionRequest transactionRequest) {
         long transactionTimeInSeconds = timeUtils.getTransactionTimeInSeconds(transactionRequest.getTimestamp());
         Double amount = transactionRequest.getAmount();
-        cache.saveTransaction(transactionTimeInSeconds, amount);
+        cache.add(transactionTimeInSeconds, amount);
         synchronized (this) {
             aggregatedStatisticsSummary.accept(amount);
         }
@@ -38,10 +33,11 @@ public class StatisticsService {
 
     @Async
     @Scheduled(fixedDelay = TimeUtils.MILLIS_PER_SECOND, initialDelay = TimeUtils.MILLIS_PER_SECOND)
-    public void pruneOlderStatistics() {
+    public void pruneOlderTransaction() {
         long nowInSeconds = timeUtils.getCurrentTimeInSeconds();
         long oldestTimeInSeconds = nowInSeconds - 60;
-        if (cache.deleteOlderTransactionFor(oldestTimeInSeconds)) {
+        if (cache.deleteKey(oldestTimeInSeconds)) {
+            log.info("deleting older value for {}:", oldestTimeInSeconds);
             synchronized (this) {
                 aggregatedStatisticsSummary = cache.reCalculateAggregatedStatisticsInCache();
             }
@@ -49,10 +45,15 @@ public class StatisticsService {
     }
 
     public StatisticSummary getSummary() {
+        log.info("cache contents {}:",cache.getCacheContents());
+        log.info("time {}:", timeUtils.getCurrentTimeInSeconds());
         if (cache.getSize() == 0)
-            return new StatisticSummary(0.0, 0.0, 0.0, 0.0, 0L);
+            return new StatisticSummary("0.00", "0.00", "0.00", "0.00", 0L);
         return new StatisticSummary(aggregatedStatisticsSummary);
     }
 
-
+    public void delete() {
+        cache.clear();
+        aggregatedStatisticsSummary = new DoubleSummaryStatistics();
+    }
 }
